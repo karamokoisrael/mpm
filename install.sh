@@ -1,5 +1,9 @@
-varname="$(./mpm_tools/getMpmDir)" && echo $varname
 echo installation of mpm
+
+sudo apt-get install unzip && sudo apt-get install wget
+
+varname="$(./mpm_tools/getMpmDir)" 
+
 sudo cp -r $varname"/mpm_tools/" /usr/local/sbin
 sudo cp -r $varname"/mpm_venv/" /usr/local/sbin
 sudo cp $varname"/mpm" /usr/local/sbin
@@ -13,6 +17,8 @@ then
     sudo rm -r  $varname
 fi
 
+echo "---------"
+echo "---------"
 
 echo now open a new terminal an run mpm 
 

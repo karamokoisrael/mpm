@@ -7,6 +7,7 @@ from mpm_tools.NetworkManager import NetworkManager
 from mpm_tools.FileManager import FileManager 
 from mpm_tools.Tools import Tools
 from progress.bar import Bar
+from pathlib import Path
 #from tools.Responder import Responder 
 
 netMan = NetworkManager()
@@ -21,25 +22,30 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="mpm your full command line")
     #parser.add_argument("cmd", type=str, metavar="create", help="Specify a command you want to execute")
     
+    
+    
+    parser.add_argument("-u", "--update",required=False, help="update your local mpm database")
+    parser.add_argument("-b", "--bored",required=False, help="uninstall mpm")
     parser.add_argument("-d" , help="Specify the name of the directory you want to store the output of the command")
+    parser.add_argument("-v", "--version",required=False, help="see the installed version of mpm")
     group = parser.add_mutually_exclusive_group()
+
+    
     group.add_argument("-c", "--create", help="create a complete project from the templates in our repositories")
     group.add_argument("-i", "--install", help="install a plugin or a module")
 
     group.add_argument("-o", "--clone", help="clone any zip file just using his url")
     group.add_argument("-f", "--fileload", help="download any file and put it in the current directory just using his url")
     
-    parser.add_argument("-u", "--update",required=False, help="update your local mpm database")
+    
     #parser.add_argument("-up", "--upgrade",required=False, help="upgrade globally mpm and get the newest version")
-    parser.add_argument("-un", "--uninstall",required=False, help="uninstall mpm")
-
-    parser.add_argument("-v", "--version",required=False, help="see the installed version of mpm")
     
 
     args = parser.parse_args()
 
     
-    
+    myOs = gb.getFundInfos("os")
+
     if args.create or args.install or args.clone:
         db = netMan.readFileFromUrl(gb.getFundInfos("url"))
         if not isinstance(db, bool):
@@ -211,49 +217,87 @@ if __name__ == "__main__":
         directory = currentArg if not args.d else args.d
         url = urlparse(currentArg)
         fileName = os.path.basename(url.path)
-        print("cloning ", currentArg)
+        print("cloning ", currentArg, "\n")
+
+        
         try:
-            netMan.downloadFile(req["zipurl"], fileName)
+            netMan.downloadFile(currentArg, fileName)
+            print("file saved with the following name", fileName)
         except Exception as e:
             print("Something went wrong while cloning")
 
-
     elif args.update:
-        #print(isinstance(db, bool))
+        print("updating mpm this will uninstall the old version before installing the new")
+        db = netMan.readFileFromUrl(gb.getFundInfos("url"))
         if not isinstance(db, bool):
             try:
 
                 db = json.loads(bytearray(str(db),"utf-8"))
-                url = db[gb.getFundInfos("os")]
-                print(fileMan.getSourceDir().getCurrentSrcDir())
-                #print(url)
-                print("updating")
-            
+                if myOs == "windows":
+                    print("download lastest mpm version by clicking on the following link", db[myOs])
+                else:
+                    url = db[myOs]
+                    #os.system("mpm -uninstall")
+                    os.system("cd /tmp && wget "+db[myOs]+" && unzip mpm.zip && cd mpm/ && ./install.sh && cd ../ && sudo rm mpm.zip && sudo rm -r mpm")                
+                    
             except Exception as e:
                 print("Something went wrong while updating")
-                print(e)
+                
         else:
             print("Something went wrong while updating")
-            exit()        
-    elif args.uninstall:
+            #print(e)
+            exit()    
+            
+
+    elif args.bored:
+
         print("uninstalling mpm")
-        os.system("sudo rm -r /usr/local/sbin/mpm_tools && sudo rm -r /usr/local/sbin/mpm_venv && sudo rm /usr/local/sbin/mpm.py && sudo rm /usr/local/sbin/mpm")
-    elif args.version:
-        print("the installed version of mpm is: ", gb.getFundInfos("version"))    
-    else :
-        print("command not found try mpm --help")        
-    """
-    cmds ={
-        'create' : 0,
-        'install' : 1,
-        'update' : 2,
-        'upgrade' : 3
-    }
-    case = cmds.get(cmd, -1) 
 
-    if case == 0:
-        print("create")
+        if myOs == "windows":
+            os.system("The uninstalling process is not still working on your mpm version. Go to the mpm installtion directory and run uninstall.exe file")
+        else:
+            os.system("sudo chmod +777 /usr/local/sbin/mpm_tools/uninstall.sh && cd /usr/local/sbin/mpm_tools && sudo ./uninstall.sh")
+        
+
+
     else:
-        print("argument not found")    
-
+        print("command not found try mpm --help")        
+        
     """
+    elif args.update:
+        print("updating mpm this will uninstall the old version before installing the new")
+        db = netMan.readFileFromUrl(gb.getFundInfos("url"))
+        if not isinstance(db, bool):
+            try:
+
+                db = json.loads(bytearray(str(db),"utf-8"))
+                if myOs == "windows":
+                    print("download last mpm version by clicking on the following link", db[myOs])
+                else:
+                    url = db[myOs]
+                    #os.system("mpm -uninstall")
+                    os.system("cd /tmp && wget "+db[myOs]+" && unzip mpm.zip && cd mpm && ./install.sh && cd ../ && sudo rm mpm.zip && sudo rm -r mpm")                
+                    
+            except Exception as e:
+                print("Something went wrong while updating")
+                
+        else:
+            print("Something went wrong while updating")
+            #print(e)
+            exit()       
+             
+    elif args.uninstall:
+
+        print("uninstalling mpm")
+
+        if myOs == "windows":
+            os.system(fileMan.getSourceDir().getCurrentSrcDir()+"uninstall.exe")
+        else:
+            os.system("sudo chmod +777 /usr/local/sbin/mpm_tools/uninstall.sh && sudo ./usr/local/sbin/mpm_tools/uninstall.sh")
+        
+    
+    elif args.version:
+        print("the installed version of mpm is: ", gb.getFundInfos("version"))   
+    """    
+        
+    

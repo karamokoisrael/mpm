@@ -1,8 +1,9 @@
+import os
 class Global:
     def __init__(self):
         self.all = {
-            "url": "http://dr-karamoko.site/mpm/database.json",
-            "os": "linux",
+            "url": "https://arielassistance.com/mpm/database.json",
+            "os": str(os.uname().sysname).lower(),
             "lang": "en",
             "version": "1.0",
             "responses": {
